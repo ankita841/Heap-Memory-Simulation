@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     double* ddata = (double*)custom_malloc(sizeof(double));
     *ddata = 12345.6789;
     printf("%s\n", (*ddata) == 12345.6789 ? "'done'" : "failed!"); //checking if memory has been allocated or not
-    
+
     //Allocating 
     printf("Array malloc....");
     data = (int*)custom_malloc(1028 * sizeof(int));
