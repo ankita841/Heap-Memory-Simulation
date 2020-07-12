@@ -14,10 +14,10 @@ void* custom_malloc(size_t size)
     }
 
 
-    // Add size of block and round up to next power of 2
+    // Add size of block and round up to next power of 2 according to buddy's technique
     size = sizeof(struct block) + size;
     /*double exp = log2l((double) size);
-    exp = ceil(exp);*/ // CANT USE MATH.H WITH MAKEFILE NEEDE -lm
+    exp = ceil(exp);*/ // CANT USE Math.h WITH MAKEFILE NEEDE -lm
 
     size_t return_size = 1;
     while (return_size < size)
@@ -198,7 +198,7 @@ void custom_free(void* ptr)
     else
     {
 
-        struct block* free_block = (int*)ptr - (int)sizeof(struct block);
+        struct block* free_block = ptr - (int)sizeof(struct block);
         // should we check if block is valid is in list by traversing head?
         // what happens to the block metadata in each partition once we merge does it still exist?
 
@@ -292,7 +292,7 @@ void* custom_realloc(void* ptr, size_t size)
 
     }
 
-    struct block* src = (int*)ptr - sizeof(struct block);
+    struct block* src = ptr - sizeof(struct block);
 
     if (src->size == size)
     {
