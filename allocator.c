@@ -8,32 +8,30 @@
 
 void* custom_malloc(size_t size)
 {
-    if ((double)size == 0)
+    if (size == 0)
     {
         return NULL; // requested size 0
     }
 
 
-    // Add size of block and round up to next power of 2 according to buddy's technique
-    size = sizeof(struct block) + size;
-    /*double exp = log2l((double) size);
-    exp = ceil(exp);*/ // CANT USE Math.h WITH MAKEFILE NEEDE -lm
+    // Add size of block 
+    size = sizeof(struct block) + size; 
 
     size_t return_size = 1;
+    // CANT USE Math.h WITH MAKEFILE NEEDE -lm
+    //rounding up the requested block to next power of 2 according to buddy's technique
     while (return_size < size)
     {
         return_size = return_size << 1;
     }
 
     double request_size = (double)return_size;
-
     double block_size = MAX_SIZE;
 
 
     if (head == NULL)
     {
         //First malloc
-
         //First malloc will fit data to head (heads size is changed accordingly by splitting below)
 
         head = my_sbrk(MAX_SIZE); // HEAP EXTENDED TO 1MiB and set start point to head
@@ -68,15 +66,12 @@ void* custom_malloc(size_t size)
             split_block->buddy = ((split_block)-((int)block_size)); //set buddy to block of same size adjacent to block
             split_block->free = true;
 
-            for (int i = 0; i < MAX_EXP; i++) // initiliaze merge_buddy to NULL
+            for (int i = 0; i < MAX_EXP; i++) // initialize merge_buddy to NULL
             {
                 split_block->merge_buddy[i] = NULL;
             }
 
-
-
             split_block->merge_buddy[0] = head->buddy; // split blocks to the right have only one merge buddy block pointer
-
 
             while (head->merge_buddy[count] != NULL && count <= 20)
             {
@@ -96,18 +91,18 @@ void* custom_malloc(size_t size)
         {
             i++;
         }
-        head->merge_buddy[i - 1] = NULL;
+        head->merge_buddy[i - 1] = NULL; // This is done to avoid merging of this block of memory with it's buddy and to tell this block is occupied.
 
 
 
-        struct block* return_block = head + (sizeof(struct block)); // return block must point to where data can be added from ie. without block metadata
+        struct block* return_block = head + (sizeof(struct block)); // return block must point to where data can be added from i.e. without block metadata
 
 
         return return_block;
     }
     else
     {
-        //2nd malloc onwards
+        //next malloc onwards
         struct  block* curr = head;
         struct block* return_block;
         while (curr)
@@ -180,7 +175,7 @@ void* custom_malloc(size_t size)
         }
         if (curr == head && head->free == true)
         {
-            return NULL; //requested size could not be fulfilled
+            return NULL; //requested size could not be allocated
 
         }
 
@@ -193,7 +188,7 @@ void custom_free(void* ptr)
 {
     if (ptr == NULL)
     {
-        //DO NOTHING
+        //DO NOTHING, since we are not returning anything here.
     }
     else
     {
@@ -208,7 +203,7 @@ void custom_free(void* ptr)
 
         while (free_block->size != MAX_SIZE && valid_block)
         {
-
+            // checking if right buddy is occupied or left one.
             if (free_block->buddy == free_block->next)
             {
 
@@ -216,7 +211,7 @@ void custom_free(void* ptr)
                 struct block* right_buddy = free_block->buddy;
                 if ((right_buddy->size == free_block->size) && right_buddy->free == true)
                 {
-                    free_block->size = (free_block->size * 2);
+                    free_block->size = (free_block->size * 2);//merging the buddies to form a larger block
                     free_block->next = right_buddy->next;
                     free_block->buddy = right_buddy->merge_buddy[0];
                     int i = 0;
@@ -226,7 +221,7 @@ void custom_free(void* ptr)
                     }
 
 
-                    //fix for seg fault at last merge
+                    //fix for segmentation fault at last merge
                     if (i - 1 == 0)
                     {
                         free_block->merge_buddy[i] = NULL;
@@ -249,7 +244,7 @@ void custom_free(void* ptr)
                 struct block* left_buddy = free_block->buddy;
                 if ((left_buddy->size == free_block->size) && left_buddy->free == true)
                 {
-                    left_buddy->size = (left_buddy->size * 2);
+                    left_buddy->size = (left_buddy->size * 2); //merging the buddies to form a larger block
                     left_buddy->next = free_block->next;
 
                     int i = 0;
